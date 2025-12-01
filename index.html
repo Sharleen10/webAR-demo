@@ -1,61 +1,105 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Simple HOC - MindAR Image Tracking Demo</title>
+  <meta charset="UTF-8">
+  <title>Simple HOC WebAR – Android</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+
+  <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.4/dist/mindar-image-aframe.prod.js"></script>
-  <style>body { margin:0; overflow:hidden; }</style>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: black;
+    }
+
+    #scanHint {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 12px;
+      font-size: 14px;
+      z-index: 999;
+    }
+  </style>
 </head>
+
 <body>
-  <a-scene mindar-image="imageTargetSrc: targets.mind;" embedded>
-    <a-camera position="0 0 0"></a-camera>
 
-    <!-- Target index 0 = first image in your targets.mind -->
-    <a-entity mindar-image-target="targetIndex: 0">
+  <!-- AR SCENE -->
+  <a-scene
+    mindar-image="imageTargetSrc: targets.mind;"
+    embedded
+    color-space="sRGB"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: true">
 
-      <!-- 3D product -->
-      <a-gltf-model src="assets/banquet_table.glb"
-                    position="0 0 0"
-                    rotation="0 180 0"
-                    scale="0.2 0.2 0.2"
-                    animation-mixer>
+    <!-- CAMERA -->
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- TARGET 0 (ONLY WORKS IF YOU UPLOADED 1 IMAGE) -->
+    <a-entity id="target0" mindar-image-target="targetIndex: 0">
+
+      <!-- 3D MODEL -->
+      <a-gltf-model
+        src="assets/product.glb"
+        position="0 0 0"
+        rotation="0 180 0"
+        scale="0.4 0.4 0.4"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 6000">
       </a-gltf-model>
 
-      <!-- UI panel that appears above model -->
+      <!-- INFO PANEL -->
       <a-entity position="0 0.9 0">
-        <a-plane width="1.6" height="0.6" material="color:#111; opacity:0.75"></a-plane>
-        <a-text value="Try the product!\nTap to get discount" align="center" color="#fff" position="0 0 0.01"></a-text>
+        <a-plane width="1.6" height="0.6" material="color:#111; opacity:0.8"></a-plane>
+        <a-text 
+          value="Simple HOC AR\nScan to Unlock Reward"
+          align="center"
+          color="#FFFFFF"
+          position="0 0 0.01">
+        </a-text>
       </a-entity>
 
     </a-entity>
+
   </a-scene>
 
+  <!-- SCAN HINT -->
+  <div id="scanHint">Point your camera at the image used to create targets.mind</div>
+
+  <!-- LOGIC -->
   <script>
-    // MindAR events for unlocking and analytics
-    document.addEventListener('DOMContentLoaded', () => {
-      const sceneEl = document.querySelector('a-scene');
-      const mindar = sceneEl.systems['mindar-image-system'];
+    const target = document.querySelector("#target0");
+    let unlocked = localStorage.getItem("sh_reward_unlocked") === "true";
 
-      let unlocked = localStorage.getItem("sh_mindar_unlocked") === "true";
+    target.addEventListener("targetFound", () => {
+      console.log("✅ Target found");
 
-      sceneEl.addEventListener("targetFound", (e) => {
-        console.log("targetFound", e);
-        if (!unlocked) {
-          unlocked = true;
-          localStorage.setItem("sh_mindar_unlocked", "true");
-          // Example: show a friendly dialog (replace with proper UI on production)
-          setTimeout(()=> alert("🎉 You unlocked a reward! Use code: SHARLEEN25"), 200);
-          // send analytics stub
-          console.log("analytics:mindar_unlocked_target0");
-        }
-      });
+      if (!unlocked) {
+        unlocked = true;
+        localStorage.setItem("sh_reward_unlocked", "true");
 
-      sceneEl.addEventListener("targetLost", (e) => {
-        console.log("targetLost", e);
-      });
+        setTimeout(() => {
+          alert("🎉 Reward Unlocked!\nUse code: SH10");
+        }, 300);
+
+        console.log("📊 Analytics: reward unlocked");
+      }
+    });
+
+    target.addEventListener("targetLost", () => {
+      console.log("❌ Target lost");
     });
   </script>
+
 </body>
 </html>
