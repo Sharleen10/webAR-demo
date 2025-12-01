@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Simple HOC - MindAR Image Tracking Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.4/dist/mindar-image-aframe.prod.js"></script>
+  <style>body { margin:0; overflow:hidden; }</style>
+</head>
+<body>
+  <a-scene mindar-image="imageTargetSrc: targets.mind;" embedded>
+    <a-camera position="0 0 0"></a-camera>
+
+    <!-- Target index 0 = first image in your targets.mind -->
+    <a-entity mindar-image-target="targetIndex: 0">
+
+      <!-- 3D product -->
+      <a-gltf-model src="assets/banquet_table.glb"
+                    position="0 0 0"
+                    rotation="0 180 0"
+                    scale="0.2 0.2 0.2"
+                    animation-mixer>
+      </a-gltf-model>
+
+      <!-- UI panel that appears above model -->
+      <a-entity position="0 0.9 0">
+        <a-plane width="1.6" height="0.6" material="color:#111; opacity:0.75"></a-plane>
+        <a-text value="Try the product!\nTap to get discount" align="center" color="#fff" position="0 0 0.01"></a-text>
+      </a-entity>
+
+    </a-entity>
+  </a-scene>
+
+  <script>
+    // MindAR events for unlocking and analytics
+    document.addEventListener('DOMContentLoaded', () => {
+      const sceneEl = document.querySelector('a-scene');
+      const mindar = sceneEl.systems['mindar-image-system'];
+
+      let unlocked = localStorage.getItem("sh_mindar_unlocked") === "true";
+
+      sceneEl.addEventListener("targetFound", (e) => {
+        console.log("targetFound", e);
+        if (!unlocked) {
+          unlocked = true;
+          localStorage.setItem("sh_mindar_unlocked", "true");
+          // Example: show a friendly dialog (replace with proper UI on production)
+          setTimeout(()=> alert("🎉 You unlocked a reward! Use code: SHARLEEN25"), 200);
+          // send analytics stub
+          console.log("analytics:mindar_unlocked_target0");
+        }
+      });
+
+      sceneEl.addEventListener("targetLost", (e) => {
+        console.log("targetLost", e);
+      });
+    });
+  </script>
+</body>
+</html>
